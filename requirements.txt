@@ -1,0 +1,14 @@
+opencv-python
+openai
+python-dotenv
+paho-mqtt
+pyserial
+picamera2
+sympy
+pyaudio
+SpeechRecognition
+langchain
+langchain-community
+langchain-core
+langchain-openai
+langchain-google-genai
