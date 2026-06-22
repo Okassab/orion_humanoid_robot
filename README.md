@@ -1,6 +1,6 @@
 # Orion Humanoid Robot Assistant
 
-Orion is a Raspberry Pi-based humanoid robot assistant created as a final year project. The robot uses voice input, camera vision, AI responses, text-to-speech, MQTT control, and Arduino movement commands.
+Orion is a Raspberry Pi-based humanoid robot assistant created as my bachelor's final year capstone project. The robot uses voice input, camera vision, AI responses, text-to-speech, MQTT control, and Arduino movement commands.
 
 The system allows the robot to listen to spoken questions, capture camera input, generate intelligent responses using OpenAI or Google Gemini, speak the answer out loud, and perform simple robot actions such as dancing or giving a high five.
 
