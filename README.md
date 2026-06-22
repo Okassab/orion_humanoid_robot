@@ -41,6 +41,7 @@ The code first tries to send the movement command through Bluetooth. If Bluetoot
 
 ## Project Structure
 
+```bash
 orion_humanoid_robot/
 ├── main.py
 ├── README.md
@@ -50,15 +51,15 @@ orion_humanoid_robot/
 └── arduino/
     └── ArduinoOledEyes/
         └── ArduinoOledEyes.ino
-
+```
 
 ## Setup
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/orion-humanoid-robot.git
-cd orion-humanoid-robot
+git clone https://github.com/Okassab/orion_humanoid_robot.git
+cd orion_humanoid_robot
 ```
 
 ### 2. Create a virtual environment
@@ -126,7 +127,7 @@ Publishing `unmute` will allow the microphone to listen again.
 
 ## Arduino OLED Eyes
 
-The `arduino/ArduinoOledEyes.ino` file controls the OLED eye animation for the robot face.
+The `arduino/ArduinoOledEyes/ArduinoOledEyes.ino` file controls the OLED eye animation for the robot face.
 
 ## Notes
 
