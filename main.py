@@ -51,7 +51,6 @@ openai_model = ChatOpenAI(
     model="gpt-4o",
     openai_api_key=openai_api_key
 )
-
 google_model = ChatGoogleGenerativeAI(
     model="gemini-1.5-flash-latest",
     api_key=google_api_key
@@ -88,10 +87,8 @@ def load_chat_history_from_file(filepath="history.txt"):
     history = ChatMessageHistory()
     if not os.path.exists(filepath):
         return history
-
     with open(filepath, "r", encoding="utf-8") as f:
         lines = f.readlines()
-
     user_msg, assistant_msg = "", ""
     for line in lines:
         if line.startswith("User:"):
@@ -156,31 +153,24 @@ def solve_integration(expression: str, variable: str = 'x'):
         return f"Error solving integration: {e}"
 
 def audio_callback(recognizer, audio):
-    
     try:
         if MUTED:
-
             print("Microphone Muted")
             return
         prompt = recognizer.recognize_google(audio)
-
         # Arduino/Bluetooth commands:
         # '0' = high five movement
         # '1' = dance movement
-
         if "high five" in prompt.lower():
             send_robot_command(HIGH_FIVE_COMMAND)
-            return
-            
+            return         
         if "dance" in prompt.lower():
             send_robot_command(DANCE_COMMAND)
             return
-        
         # print(f"[DEBUG] Heard: {prompt}")
         preferred_model = detect_best_model(prompt)
         assistant = get_assistant(preferred_model)
         assistant.answer(prompt, webcam_stream.read(encode=True))
-
     except UnknownValueError:
             pass
 
@@ -189,26 +179,23 @@ def audio_callback(recognizer, audio):
 #######################################################################################################
 
 class WebcamStream:
-
     def __init__(self):
         self.picam2 = Picamera2()
         config = self.picam2.create_preview_configuration(main={"format": "RGB888", "size": (1280, 720)})
-
         # config["crop"] = (0 , 0 , 1 , 1)
         self.picam2.configure(config)
-
         self.frame = None
         self.running = False
         self.lock = Lock()
         self.stop_event = Event()
-
+        
     def start(self):
         self.picam2.start()
         self.running = True
         self.thread = Thread(target=self.update, daemon=True)
         self.thread.start()
         return self
-
+        
     def update(self):
         while not self.stop_event.is_set():
             frame = self.picam2.capture_array()
@@ -218,11 +205,9 @@ class WebcamStream:
     def read(self, encode=False):
         with self.lock:
             frame = self.frame.copy() if self.frame is not None else None
-
         if encode and frame is not None:
             _, buffer = cv2.imencode(".jpeg", frame)
             return base64.b64encode(buffer)
-
         return frame
 
     def stop(self):
@@ -235,21 +220,15 @@ class WebcamStream:
 #######################################################################################################
 
 class Assistant:
-
     """AI Assistant for generating responses based on user prompts and webcam input."""
-
     def __init__(self, model, chat_message_history):
-
         self.chat_message_history = chat_message_history
         self.chain = self._create_inference_chain(model)
 
     def answer(self, prompt, image):
-
         """Generates an answer based on the prompt and image."""
-
         if not prompt:
             return
-          
         # Check for integration request
         if "integrate" in prompt.lower():
             try:
@@ -265,25 +244,19 @@ class Assistant:
               {"prompt": prompt, "image_base64": image.decode() if image else ""},  #  CHANGED HERE PRT 1
               config={"configurable": {"session_id": "unused"}}
           ).strip()
-
         print("Orion:", response)
-
         # Save prompt and response to history.txt
         with open("history.txt", "a", encoding="utf-8") as f:
           f.write(f"User: {prompt}\nAssistant: {response}\n\n")
         print("Saved to history.txt")
-
         if response:
             send_mqtt_message(MQTT_RESPONSE_TOPIC, response)
             self._tts(response)
 
     def _tts(self, response):
         """Speaks response and moves servo motor at the same time."""
-
         openai.api_key = openai_api_key
         audio_stream = PyAudio().open(format=paInt16, channels=1, rate=24000, output=True)
-
-
         try:
             with openai.audio.speech.with_streaming_response.create(
                 model="tts-1",
@@ -293,19 +266,14 @@ class Assistant:
             ) as stream:
                 for chunk in stream.iter_bytes(chunk_size=1024):
                     audio_stream.write(chunk)
-
         finally:
             # Stop the servo right after speech ends
             # stop_event.set()
             # servo_thread.join()
             audio_stream.close()
 
-
     def _create_inference_chain(self, model):
-
         """Creates a chain for inference using Langchain and the selected model."""
-        
-
         SYSTEM_PROMPT = """
         You are Orion, a witty but intelligent math tutor for students.
 
@@ -323,7 +291,6 @@ class Assistant:
 
         """
         prompt_template = ChatPromptTemplate.from_messages(
-
             [
                 SystemMessage(content=SYSTEM_PROMPT),
                 MessagesPlaceholder(variable_name="chat_history"),
@@ -337,11 +304,8 @@ class Assistant:
             ]
         )
 
-
         chain = prompt_template | model | StrOutputParser()
         # chat_message_history = ChatMessageHistory()
-
-
         return RunnableWithMessageHistory(
             chain,
             lambda _: self.chat_message_history,  # <-- use existing history
@@ -349,48 +313,36 @@ class Assistant:
             history_messages_key="chat_history"
         )
         
-
 #######################################################################################################
 
 #######################################################################################################
 
 def main():
     global webcam_stream
-
     # Initialize the webcam stream
     webcam_stream = WebcamStream().start()
-
     # Start MQTT listener
     setup_mqtt_listener()
-
     # Set up speech recognizer
     recognizer = Recognizer()
     microphone = Microphone()
-
     # Adjust for ambient noise
     with microphone as source:
         recognizer.adjust_for_ambient_noise(source)
-
     # Start listening for audio input
     stop_listening = recognizer.listen_in_background(microphone, audio_callback)
-
     try:
         while True:
             frame = webcam_stream.read()
-
             if frame is not None:
                 cv2.imshow("Webcam", frame)
-
             key = cv2.waitKey(1)
-
             if key in [27, ord("q")]:
                 break
-
     finally:
         webcam_stream.stop()
         cv2.destroyAllWindows()
         stop_listening(wait_for_stop=False)
-
 
 if __name__ == "__main__":
     main()
