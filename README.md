@@ -1,4 +1,4 @@
-# Orion Humanoid Robot Assistant                                                                                                        Jan. 2025 - May. 2025
+# Orion Humanoid Robot Assistant -                                                                                                       Jan. 2025 - May. 2025
 
 Orion is a Raspberry Pi-based humanoid robot assistant created as my bachelor's final year capstone project. The robot uses voice input, camera vision, AI responses, text-to-speech, MQTT control, and Arduino movement commands.
 
